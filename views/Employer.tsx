@@ -8,18 +8,21 @@ import {
 } from 'lucide-react';
 import { SAMPLE_CANDIDATES, ARJUN_PROFILE, Candidate } from '../types';
 
-// Tooltip Component
-const Tooltip = ({ children, text }: { children: React.ReactNode, text: React.ReactNode }) => (
-  <div className="relative group inline-block">
+// Simplified Tooltip Component - only for small icons if needed, or we can rely on standard title for cleaner UI
+// Removing the large black popovers as requested ("remove previews")
+const Tooltip = ({ children, text }: { children: React.ReactNode, text: string }) => (
+  <div className="relative group inline-block" title={text}>
     {children}
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl">
-      {text}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
-    </div>
   </div>
 );
 
-const CandidateCard = ({ candidate, viewMode, onClick }: { candidate: Candidate; viewMode: 'HR' | 'Manager'; onClick: (c: Candidate) => void }) => {
+interface CandidateCardProps {
+  candidate: Candidate;
+  viewMode: 'HR' | 'Manager';
+  onClick: (c: Candidate) => void;
+}
+
+const CandidateCard: React.FC<CandidateCardProps> = ({ candidate, viewMode, onClick }) => {
   return (
     <div 
       className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer group"
@@ -31,10 +34,10 @@ const CandidateCard = ({ candidate, viewMode, onClick }: { candidate: Candidate;
           <img src={candidate.avatar} className="w-14 h-14 rounded-xl object-cover shadow-sm" alt="" />
           <div>
             <h3 className="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors">{candidate.name}</h3>
-            <div className="flex items-center gap-2 text-sm text-slate-600">
+            <div className="flex items-center gap-2 text-sm text-slate-600 mt-0.5">
               <span className="font-medium">{candidate.role}</span>
               {candidate.targetLocation && (
-                <span className="text-slate-400 text-xs flex items-center gap-1">
+                <span className="text-slate-400 text-xs flex items-center gap-1 ml-1">
                   <MapPin className="w-3 h-3" />
                   {candidate.location} <span className="text-slate-300">→</span> {candidate.targetLocation.replace('Open to ', '')}
                 </span>
@@ -43,78 +46,78 @@ const CandidateCard = ({ candidate, viewMode, onClick }: { candidate: Candidate;
           </div>
         </div>
         <div className="flex gap-1">
-          {candidate.isRemoteReady && <Tooltip text="Remote Ready"><div className="p-1.5 bg-slate-100 rounded text-slate-600"><Laptop className="w-4 h-4" /></div></Tooltip>}
-          {candidate.needsRelocation && <Tooltip text="Relocation Needed"><div className="p-1.5 bg-slate-100 rounded text-slate-600"><Plane className="w-4 h-4" /></div></Tooltip>}
-          {candidate.needsVisa && <Tooltip text={`Visa Required: ${candidate.visaStatus}`}><div className="p-1.5 bg-blue-50 rounded text-blue-600"><Globe className="w-4 h-4" /></div></Tooltip>}
+          {candidate.isRemoteReady && (
+             <div className="p-1.5 bg-slate-100 rounded text-slate-500" title="Remote Ready">
+               <Laptop className="w-4 h-4" />
+             </div>
+          )}
+          {candidate.needsRelocation && (
+             <div className="p-1.5 bg-slate-100 rounded text-slate-500" title="Relocation Needed">
+               <Plane className="w-4 h-4" />
+             </div>
+          )}
+          {candidate.needsVisa && (
+             <div className="p-1.5 bg-blue-50 rounded text-blue-600" title={`Visa Required: ${candidate.visaStatus}`}>
+               <Globe className="w-4 h-4" />
+             </div>
+          )}
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+      {/* Metrics Grid - Aligned & Cleaned */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100 items-start">
         
         {/* Speed */}
-        <div>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-            Start Time <HelpCircle className="w-3 h-3" />
+        <div className="flex flex-col gap-1">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            Start Time
           </div>
-          <Tooltip text={
-            <div className="space-y-1">
-              <div className="font-bold">Estimated Start: {candidate.hiringSpeedLabel}</div>
-              {candidate.needsVisa && <div>⚠️ Includes {candidate.visaStatus} processing time</div>}
-            </div>
-          }>
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${
-                candidate.hiringSpeed === 'Fast' ? 'bg-emerald-500' : 
-                candidate.hiringSpeed === 'Medium' ? 'bg-amber-400' : 'bg-red-500'
-              }`}></div>
-              <span className="text-sm font-bold text-slate-900">{candidate.hiringSpeed}</span>
-            </div>
-          </Tooltip>
+          <div className="flex items-center gap-2">
+            <div className={`w-2.5 h-2.5 rounded-full ${
+              candidate.hiringSpeed === 'Fast' ? 'bg-emerald-500' : 
+              candidate.hiringSpeed === 'Medium' ? 'bg-amber-400' : 'bg-red-500'
+            }`}></div>
+            <span className="text-sm font-bold text-slate-900">{candidate.hiringSpeed}</span>
+          </div>
+          <div className="text-[10px] text-slate-500 truncate" title={candidate.hiringSpeedLabel}>{candidate.hiringSpeedLabel}</div>
         </div>
 
         {/* Skill */}
-        <div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Skill Level</div>
-            <Tooltip text={candidate.starLabel}>
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                  key={i} 
-                  className={`w-3.5 h-3.5 ${i < candidate.starRating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} 
-                  />
-                ))}
-                <span className="ml-1 text-xs font-medium text-slate-600 hidden xl:inline">{candidate.starRating === 5 ? 'Elite' : candidate.starRating === 4 ? 'Strong' : 'Solid'}</span>
-              </div>
-            </Tooltip>
+        <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Skill Level</div>
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star 
+                key={i} 
+                className={`w-3 h-3 ${i < candidate.starRating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} 
+                />
+              ))}
+            </div>
+            <div className="text-[10px] text-slate-500 truncate" title={candidate.starLabel}>
+              {candidate.starRating === 5 ? 'Elite' : candidate.starRating === 4 ? 'Strong' : 'Solid'}
+            </div>
         </div>
 
         {/* Cost */}
-        <div>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Hiring Cost</div>
-          <Tooltip text={
-              <div className="text-xs">
-                <div className="flex justify-between gap-4"><span>Salary:</span> <span className="font-mono">{candidate.costBreakdown?.salary}</span></div>
-                <div className="flex justify-between gap-4"><span>Visa:</span> <span className="font-mono">{candidate.costBreakdown?.visa}</span></div>
-                <div className="flex justify-between gap-4"><span>Relo:</span> <span className="font-mono">{candidate.costBreakdown?.relocation}</span></div>
-              </div>
-          }>
-            <div className="text-sm font-bold text-slate-900">{candidate.costTier} <span className="text-xs font-normal text-slate-500 capitalize">{candidate.costTier === '$$$' ? 'High' : candidate.costTier === '$$' ? 'Medium' : 'Low'}</span></div>
-          </Tooltip>
+        <div className="flex flex-col gap-1">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hiring Cost</div>
+          <div className="text-sm font-bold text-slate-900">{candidate.costTier}</div>
+          <div className="text-[10px] text-slate-500 capitalize">
+            {candidate.costTier === '$$$' ? 'High' : candidate.costTier === '$$' ? 'Medium' : 'Low'}
+          </div>
         </div>
 
         {/* Stability */}
-        <div>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Stability</div>
-          <Tooltip text={candidate.stabilityReason}>
-            <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${
-                candidate.stability === 'Low Risk' ? 'bg-emerald-500' : 
-                candidate.stability === 'Medium Risk' ? 'bg-amber-500' : 'bg-red-500'
-              }`}></div>
-              <span className="text-sm font-medium text-slate-900">{candidate.stability.split(' ')[0]} Risk</span>
-            </div>
-          </Tooltip>
+        <div className="flex flex-col gap-1">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stability</div>
+          <div className="flex items-center gap-1.5">
+            <div className={`w-2.5 h-2.5 rounded-full ${
+              candidate.stability === 'Low Risk' ? 'bg-emerald-500' : 
+              candidate.stability === 'Medium Risk' ? 'bg-amber-500' : 'bg-red-500'
+            }`}></div>
+            <span className="text-sm font-bold text-slate-900">{candidate.stability.split(' ')[0]}</span>
+          </div>
+          <div className="text-[10px] text-slate-500">Risk Score</div>
         </div>
       </div>
 
@@ -131,9 +134,9 @@ const CandidateCard = ({ candidate, viewMode, onClick }: { candidate: Candidate;
       {/* Dynamic View Content */}
       <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
           {viewMode === 'HR' ? (
-            <div className="flex gap-3 text-slate-500">
-              <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {candidate.visaStatus}</span>
-              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {candidate.experience}</span>
+            <div className="flex gap-4 text-slate-500">
+              <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> {candidate.visaStatus}</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {candidate.experience}</span>
             </div>
           ) : (
             <div className="flex gap-2">
@@ -323,7 +326,7 @@ export const EmployerView: React.FC = () => {
                          key={candidate.id} 
                          candidate={candidate} 
                          viewMode={viewMode}
-                         onClick={setSelectedCandidate}
+                         onClick={(c) => setSelectedCandidate(c)}
                        />
                      ))}
                   </div>
